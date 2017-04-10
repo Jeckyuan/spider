@@ -118,6 +118,64 @@ public class MySQLInsert {
 	}
 
 	/**
+	 * 向MySQL数据库插入爬取的车系信息
+	 *
+	 * @param csInfo
+	 * @return
+	 */
+	public int insertStoredCarSeriesInfo(String tableName, String csInfo) {
+		int rs = 0;
+		String sql = "INSERT INTO " + tableName + " (web_site, id, name, url, current_location, price, score ) "
+				+ " VALUES(?, ?, ?, ?, ?, ?, ?)";
+
+		String[] csInfoList = csInfo.split("\t", -1);
+		if (csInfoList.length == 6 && csInfoList[1] != "") {
+			String webSite = "汽车之家";
+			String id = csInfoList[0];
+			String name = csInfoList[1];
+
+			String url = csInfoList[2];
+			String currentLocation = csInfoList[3];
+			String price = csInfoList[4];
+
+			String score = csInfoList[5];
+
+			int count = queryCarSeriesInfo(webSite, id);
+			if (count == 0) {
+				try {
+					if (conn != null) {
+						PreparedStatement pstmt = conn.prepareStatement(sql);
+						pstmt.setString(1, webSite);
+						pstmt.setString(2, id);
+						pstmt.setString(3, name);
+
+						pstmt.setString(4, url);
+						pstmt.setString(5, currentLocation);
+						pstmt.setString(6, price);
+
+						pstmt.setString(7, score);
+
+						rs = pstmt.executeUpdate();
+						totalUpdateRows += rs;
+						pstmt.close();
+					} else {
+						logger.error("请初始化数据库连接");
+					}
+				} catch (Exception e) {
+					logger.error("数据插入失败：" + csInfo);
+					logger.error(e);
+				}
+			} else {
+				logger.info("车系信息已存在：" + webSite + "," + id);
+			}
+
+		} else {
+			logger.error("MySQL Insert输入错误：" + csInfo);
+		}
+		return rs;
+	}
+
+	/**
 	 * 向MySQL数据库插入爬取的车型信息
 	 *
 	 * @param carInfo
@@ -155,6 +213,73 @@ public class MySQLInsert {
 						pstmt.setString(3, carId);
 
 						pstmt.setString(4, naem);
+						pstmt.setString(5, company);
+						pstmt.setString(6, pricce);
+
+						pstmt.setString(7, carType);
+						pstmt.setString(8, machine);
+						pstmt.setString(9, transmissionType);
+
+						pstmt.setString(10, carStructure);
+
+						rs = pstmt.executeUpdate();
+						totalUpdateRows += rs;
+						pstmt.close();
+					} else {
+						logger.error("请初始化数据库连接");
+					}
+				} catch (Exception e) {
+					logger.error("数据插入失败：" + carInfo);
+					logger.error(e);
+				}
+			} else {
+				logger.info("车型信息已存在：" + webSite + "," + csId + "," + carId);
+			}
+
+		} else {
+			logger.error("MySQL Insert输入错误：" + carInfo);
+		}
+		return rs;
+	}
+
+	/**
+	 * 向MySQL数据库插入爬取的车型信息
+	 *
+	 * @param carInfo
+	 * @return
+	 */
+	public int insertStoredCarInfo(String tableName, String carInfo) {
+		int rs = 0;
+		String sql = "INSERT INTO " + tableName
+				+ " (web_site, cs_id, car_id, name, company, price, car_type, machine, transmission_type, car_structure) "
+				+ " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+		String[] csInfoList = carInfo.split("\t", -1);
+		if (csInfoList.length == 11 && csInfoList[1] != "") {
+			String webSite = "汽车之家";
+			String csId = csInfoList[0];
+			String carId = csInfoList[1];
+
+			String name = csInfoList[2];
+			String company = csInfoList[4];
+			String pricce = csInfoList[3];
+
+			String carType = csInfoList[5];
+			String machine = csInfoList[6];
+			String transmissionType = csInfoList[10];
+
+			String carStructure = csInfoList[7];
+
+			int count = queryCarInfo(webSite, csId, carId);
+			if (count == 0) {
+				try {
+					if (conn != null) {
+						PreparedStatement pstmt = conn.prepareStatement(sql);
+						pstmt.setString(1, webSite);
+						pstmt.setString(2, csId);
+						pstmt.setString(3, carId);
+
+						pstmt.setString(4, name);
 						pstmt.setString(5, company);
 						pstmt.setString(6, pricce);
 
@@ -253,8 +378,10 @@ public class MySQLInsert {
 	public static void main(String[] args) {
 		String[] csInfoFileList = { "E:\\work\\汽车之家\\tmp\\autohome\\autohome_csinfo.txt",
 				"E:\\work\\汽车之家\\tmp\\bitauto\\bitauto_csinfo.txt", "E:\\work\\汽车之家\\tmp\\xcar\\csinfo.txt" };
+
 		String[] carInfoFileList = { "E:\\work\\汽车之家\\tmp\\autohome\\autohome_carinfo.txt",
 				"E:\\work\\汽车之家\\tmp\\xcar\\carinfo.txt", "E:\\work\\汽车之家\\tmp\\bitauto\\bitauto_carinfo.txt" };
+
 		MySQLInsert im = new MySQLInsert();
 		im.getConn();
 		if (im.conn != null) {
@@ -264,6 +391,8 @@ public class MySQLInsert {
 					BufferedReader breader = new BufferedReader(new FileReader(filePath));
 					String tmpLine = null;
 					while ((tmpLine = breader.readLine()) != null) {
+						// im.insertStoredCarSeriesInfo("dim_car_series_info",
+						// tmpLine);
 						im.insertCarSeriesInfo("dim_car_series_info", tmpLine);
 					}
 					breader.close();
@@ -277,6 +406,8 @@ public class MySQLInsert {
 					BufferedReader breader = new BufferedReader(new FileReader(filePath));
 					String tmpLine = null;
 					while ((tmpLine = breader.readLine()) != null) {
+						// im.insertStoredCarInfo("dim_car_details_info",
+						// tmpLine);
 						im.insertCarInfo("dim_car_details_info", tmpLine);
 					}
 					breader.close();

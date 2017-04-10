@@ -247,6 +247,34 @@ public class Autohome {
 		return carInfoList;
 	}
 
+	/**
+	 * 爬取汽车之家的车系和车型信息，存放到指定的文件中
+	 *
+	 * @param filePath
+	 *            信息存放路径
+	 * @throws ParseException
+	 * @throws IOException
+	 */
+	public void crawlingCarInfo(String filePath) throws ParseException, IOException {
+		ArrayList<String> csUrlList = getCarSeriesUrl();
+
+		for (String csUrl : csUrlList) {
+			getCarSeriesInfo(csUrl);
+		}
+
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath + "autohome_csinfo.txt"))) {
+			for (String info : carSeriesInfoList) {
+				bufferedWriter.write(info + "\n");
+			}
+		}
+
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath + "autohome_carinfo.txt"))) {
+			for (String info : carDetailInfoList) {
+				bufferedWriter.write(info + "\n");
+			}
+		}
+	}
+
 	public static void main(String[] args) throws ParseException, IOException {
 		CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
 		Autohome autohome = new Autohome(closeableHttpClient);

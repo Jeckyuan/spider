@@ -257,6 +257,30 @@ public class Xcar {
 		return html;
 	}
 
+	/**
+	 * 爬取易车的车系和车型信息，存放到指定的文件中
+	 *
+	 * @param filePath
+	 *            信息存放路径
+	 * @throws IOException
+	 */
+	public void crawlingCarInfo(String filePath) throws IOException {
+		getCarSeriesId(rootUrl);
+		getCarInfo(carSeriesId);
+
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath + "Xcar_csinfo.txt"))) {
+			for (String info : csInfoList) {
+				bufferedWriter.write(info + "\n");
+			}
+		}
+
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath + "Xcar_carinfo.txt"))) {
+			for (String info : carInfoList) {
+				bufferedWriter.write(info + "\n");
+			}
+		}
+	}
+
 	public static void main(String[] args) throws IOException {
 		CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
 		Xcar xcar = new Xcar(closeableHttpClient);
@@ -275,6 +299,6 @@ public class Xcar {
 				bufferedWriter.write(info + "\n");
 			}
 		}
-
 	}
+
 }

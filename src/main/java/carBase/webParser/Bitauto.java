@@ -186,9 +186,7 @@ public class Bitauto {
 			if (els.size() > 0) {
 				configuration = els.first().attr("href").trim();
 				try {
-					String tmp = getCarInfo(csId, configuration);
-					// String carInfo = webSite + "\t" + csId + "\t" + tmp;
-					// carDetailInfoList.add(carInfo);
+					getCarInfo(csId, configuration);
 				} catch (Exception e) {
 					logger.error("获取车型参数配置信息失败：" + ROOTURL + configuration);
 					logger.error(csUrl);
@@ -255,6 +253,38 @@ public class Bitauto {
 			logger.info("获取一条车型信息：" + rs);
 		}
 		return rs;
+	}
+
+	/**
+	 * 爬取易车的车系和车型信息，存放到指定的文件中
+	 *
+	 * @param filePath
+	 *            信息存放路径
+	 * @throws ParseException
+	 * @throws IOException
+	 */
+	public void crawlingCarInfo(String filePath) throws ParseException, IOException {
+		ArrayList<String> brandInfoList = readBrands();
+		ArrayList<String> csUrlList = getCarSeriesUrl(brandInfoList);
+		for (String url : csUrlList) {
+			try {
+				getCarSeriesInfo(url);
+			} catch (Exception e) {
+				logger.error("获取车系信息失败：" + url);
+			}
+		}
+
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath + "bitauto_csinfo.txt"))) {
+			for (String info : carSeriesInfoList) {
+				bufferedWriter.write(info + "\n");
+			}
+		}
+
+		try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath + "bitauto_carinfo.txt"))) {
+			for (String info : carDetailInfoList) {
+				bufferedWriter.write(info + "\n");
+			}
+		}
 	}
 
 	public static void main(String[] args) throws ParseException, IOException {
